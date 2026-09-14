@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import AddTodo from "./components/AddTodo.jsx";
 import TodoList from "./components/TodoList.jsx";
 
-const API_BASE = "http://localhost:5000/api";
-
+const API_BASE = "https://todo-app-soyi.onrender.com/api";
 export default function App() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
