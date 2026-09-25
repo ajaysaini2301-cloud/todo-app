@@ -2,11 +2,19 @@ import { useEffect, useState } from "react";
 import AddTodo from "../components/AddTodo.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const API_BASE = "https://todo-app-soyi.onrender.com/api";
-// const API_BASE = "http://localhost:5000/api";
+// const API_BASE = "https://todo-app-soyi.onrender.com/api";
+const API_BASE = "http://localhost:5000/api";
 
 export default function Dashboard() {
   const [todos, setTodos] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -108,9 +116,20 @@ export default function Dashboard() {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f4f5fb", fontFamily: "sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f4f5fb", fontFamily: "sans-serif", flexDirection: isMobile ? "column" : "row", position: "relative" }}>
 
       {/* Sidebar */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.4)",
+            zIndex: 40,
+          }}
+        />
+      )}
       <aside
         style={{
           width: 260,
@@ -119,6 +138,17 @@ export default function Dashboard() {
           padding: "24px 16px",
           display: "flex",
           flexDirection: "column",
+          ...(isMobile
+            ? {
+              position: "fixed",
+              top: 0,
+              left: sidebarOpen ? 0 : -280,
+              height: "100vh",
+              zIndex: 50,
+              transition: "left 0.25s ease",
+              boxShadow: sidebarOpen ? "2px 0 12px rgba(0,0,0,0.15)" : "none",
+            }
+            : {}),
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 32, padding: "0 8px" }}>
@@ -235,13 +265,31 @@ export default function Dashboard() {
       </aside>
 
       {/* Main content */}
-      <main style={{ flex: 1, padding: "24px 28px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <main style={{ flex: 1, padding: isMobile ? "16px" : "24px 28px", display: "flex", flexDirection: "column", gap: 20, width: "100%", boxSizing: "border-box" }}>
 
         {/* Top bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: isMobile ? "wrap" : "nowrap" }}>
+          {isMobile && (
+            <button
+              onClick={() => setSidebarOpen(true)}
+              style={{
+                border: "1px solid #ececf5",
+                background: "#fff",
+                borderRadius: 10,
+                width: 40,
+                height: 40,
+                fontSize: 18,
+                cursor: "pointer",
+                flexShrink: 0,
+              }}
+            >
+              ☰
+            </button>
+          )}
           <div
             style={{
               flex: 1,
+              minWidth: isMobile ? "60%" : "auto",
               display: "flex",
               alignItems: "center",
               gap: 10,
@@ -277,12 +325,12 @@ export default function Dashboard() {
             >
               {initials}
             </div>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.name || "User"}</span>
+            {!isMobile && <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.name || "User"}</span>}
             <span style={{ color: "#9a9ab0" }}>▾</span>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: 20, alignItems: "flex-start", flexDirection: isMobile ? "column" : "row", width: "100%" }}>
 
           {/* Left/center column */}
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -377,7 +425,7 @@ export default function Dashboard() {
           </div>
 
           {/* Right column */}
-          <div style={{ width: 300, display: "flex", flexDirection: "column", gap: 16, flexShrink: 0 }}>
+          <div style={{ width: isMobile ? "100%" : 300, display: "flex", flexDirection: "column", gap: 16, flexShrink: 0 }}>
 
             {/* Progress card */}
             <div style={{ background: "#fff", border: "1px solid #ececf5", borderRadius: 16, padding: 20 }}>
